@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#101022">
+    <title>Word Scramble | A little brain break</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+            color: #f7f5ff;
+            background: #101022;
+            font-synthesis: none;
+            text-rendering: optimizeLegibility;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            position: relative;
+            isolation: isolate;
+            display: grid;
+            min-height: 100vh;
+            place-items: center;
+            margin: 0;
+            padding: 32px 18px;
+            overflow-x: hidden;
+            background:
+                radial-gradient(ellipse at 15% 16%, rgba(147, 91, 255, .2), transparent 34%),
+                radial-gradient(ellipse at 86% 82%, rgba(49, 224, 202, .13), transparent 32%),
+                linear-gradient(145deg, #101022 0%, #17152d 48%, #0d1b27 100%);
+        }
+
+        body::before {
+            position: fixed;
+            z-index: -1;
+            inset: 0;
+            background-image:
+                radial-gradient(1px 1px at 12% 24%, rgba(255,255,255,.7) 50%, transparent 100%),
+                radial-gradient(1px 1px at 78% 17%, rgba(255,255,255,.55) 50%, transparent 100%),
+                radial-gradient(2px 2px at 63% 73%, rgba(192,174,255,.7) 50%, transparent 100%),
+                radial-gradient(1px 1px at 31% 83%, rgba(255,255,255,.6) 50%, transparent 100%),
+                radial-gradient(1px 1px at 91% 48%, rgba(105,241,222,.7) 50%, transparent 100%);
+            background-size: 290px 260px, 360px 330px, 420px 390px, 330px 310px, 390px 370px;
+            content: "";
+            opacity: .7;
+            animation: twinkle 5s ease-in-out infinite alternate;
+        }
+
+        .orb {
+            position: fixed;
+            z-index: -1;
+            width: 340px;
+            aspect-ratio: 1;
+            border: 1px solid rgba(255,255,255,.11);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 14s ease-in-out infinite alternate;
+        }
+
+        .orb-one {
+            top: -190px;
+            right: -85px;
+            background: radial-gradient(circle, rgba(141, 91, 255, .2), transparent 68%);
+            box-shadow: inset 0 0 70px rgba(141, 91, 255, .17), 0 0 80px rgba(141, 91, 255, .08);
+        }
+
+        .orb-two {
+            bottom: -240px;
+            left: -100px;
+            width: 450px;
+            border-color: rgba(67,238,215,.12);
+            background: radial-gradient(circle, rgba(67, 238, 215, .13), transparent 68%);
+            box-shadow: inset 0 0 80px rgba(67, 238, 215, .12);
+            animation-delay: -6s;
+        }
+
+        main {
+            width: min(100%, 470px);
+            padding: 42px clamp(22px, 7vw, 42px) 34px;
+            border: 1px solid rgba(255,255,255,.16);
+            border-radius: 30px;
+            background: linear-gradient(145deg, rgba(255,255,255,.105), rgba(255,255,255,.035));
+            box-shadow: 0 30px 100px rgba(0,0,0,.4), inset 0 1px rgba(255,255,255,.13);
+            backdrop-filter: blur(20px);
+            text-align: center;
+            animation: card-enter .75s cubic-bezier(.2,.8,.2,1) both;
+        }
+
+        .eyebrow {
+            margin: 0 0 10px;
+            color: #8feadd;
+            font-size: 11px;
+            font-weight: 750;
+            letter-spacing: .24em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(29px, 7vw, 38px);
+            letter-spacing: -.045em;
+        }
+
+        .subtitle {
+            margin: 10px 0 28px;
+            color: #aaa9c4;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .stat {
+            padding: 12px 6px;
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 15px;
+            background: rgba(9,11,28,.32);
+        }
+
+        .stat-value {
+            display: block;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 750;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stat-label {
+            display: block;
+            margin-top: 4px;
+            color: #9696b3;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+
+        .word-label {
+            margin: 0 0 12px;
+            color: #b7b3d3;
+            font-size: 12px;
+            font-weight: 650;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+        }
+
+        #scramble {
+            min-height: 62px;
+            margin: 0 0 10px;
+            color: #fff;
+            font-size: clamp(31px, 9vw, 46px);
+            font-weight: 800;
+            letter-spacing: .18em;
+            line-height: 1.3;
+            overflow-wrap: anywhere;
+            text-shadow: 0 0 30px rgba(153,122,255,.5);
+            animation: word-pop .35s ease-out both;
+        }
+
+        #feedback {
+            min-height: 24px;
+            margin: 0 0 15px;
+            color: #b6b3ca;
+            font-size: 13px;
+        }
+
+        #feedback.success {
+            color: #83eed4;
+        }
+
+        #feedback.error {
+            color: #ff9aaf;
+        }
+
+        #guess {
+            width: 100%;
+            margin-bottom: 12px;
+            padding: 15px 18px;
+            border: 1px solid rgba(255,255,255,.16);
+            border-radius: 14px;
+            outline: none;
+            background: rgba(7,9,24,.55);
+            color: #fff;
+            font: inherit;
+            text-align: center;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        #guess::placeholder {
+            color: #777791;
+        }
+
+        #guess:focus {
+            border-color: #83eed4;
+            box-shadow: 0 0 0 3px rgba(131,238,212,.14);
+        }
+
+        button {
+            min-height: 48px;
+            padding: 12px 17px;
+            border: 0;
+            border-radius: 13px;
+            cursor: pointer;
+            font: inherit;
+            font-weight: 750;
+            transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.09);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:focus-visible {
+            outline: 3px solid #fff;
+            outline-offset: 3px;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: .55;
+            transform: none;
+        }
+
+        .primary {
+            width: 100%;
+            background: linear-gradient(105deg, #aa82ff, #65e3ce);
+            box-shadow: 0 10px 28px rgba(102,124,255,.25);
+            color: #101323;
+        }
+
+        .secondary-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 11px;
+            margin-top: 11px;
+        }
+
+        .secondary {
+            border: 1px solid rgba(255,255,255,.13);
+            background: rgba(255,255,255,.055);
+            color: #e6e3f7;
+        }
+
+        .helper {
+            min-height: 22px;
+            margin: 14px 0 0;
+            color: #9291ad;
+            font-size: 12px;
+        }
+
+        @keyframes float {
+            to { transform: translate3d(-18px, 24px, 0) scale(1.05); }
+        }
+
+        @keyframes twinkle {
+            to { opacity: .35; transform: translateY(-5px); }
+        }
+
+        @keyframes card-enter {
+            from { opacity: 0; transform: translateY(18px) scale(.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes word-pop {
+            from { opacity: .4; transform: translateY(5px) scale(.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @media (max-width: 420px) {
+            main { padding-top: 32px; padding-bottom: 27px; }
+            .stats { gap: 7px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                scroll-behavior: auto !important;
+                transition-duration: .01ms !important;
+            }
+        }
+        .game-level {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #aaa9c4;
+        }
+
+        #game-level {
+            padding: 8px 12px;
+            border: 1px solid rgba(255,255,255,.16);
+            border-radius: 10px;
+            background: rgba(7,9,24,.55);
+            color: #f7f5ff;
+            font: inherit;
+        }
+
+        #game-level:focus-visible {
+            outline: 2px solid #83eed4;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="orb orb-one" aria-hidden="true"></div>
+    <div class="orb orb-two" aria-hidden="true"></div>
+    <main>
+        <p class="eyebrow">A little brain break</p>
+        <h1>Word Scramble</h1>
+        <p class="subtitle">Fresh random words every round. Keep your streak alive.</p>
+
+        <section class="stats" aria-label="Game stats">
+            <div class="stat"><span class="stat-value" id="score">0</span><span class="stat-label">Score</span></div>
+            <div class="stat"><span class="stat-value" id="streak">0</span><span class="stat-label">Streak</span></div>
+            <div class="stat"><span class="stat-value" id="best">0</span><span class="stat-label">Best</span></div>
+        </section>
+
+        <p class="word-label">Unscramble this word</p>
+        <div id="scramble" aria-live="polite"></div>
+        <p id="feedback" aria-live="polite">Type your guess below to play.</p>
+
+        <form id="guess-form">
+            <input id="guess" type="text" aria-label="Your guess" placeholder="Type your guess" autocomplete="off" autocapitalize="none">
+            <button class="primary" id="submit-button" type="submit">Check answer</button>
+        </form>
+        <div class="game-level">
+            <label for="game-level">Game Level:</label>
+            <select id="game-level" name="game-level" style="margin-left: 10px;border-radius: 5px; padding: 5px;color: #101323; background-color: #65e3ce; border: 1px solid rgba(255,255,255,.16);">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+        </div>
+        <div class="secondary-actions">
+            <button class="secondary" id="hint-button" type="button">Show hint</button>
+            <button class="secondary" id="skip-button" type="button">Skip word</button>
+        </div>
+        <p class="helper" id="helper" aria-live="polite">Words are fetched online · Press Enter to submit.</p>
+    </main>
+    <script src="soww.js"></script>
+</body>
+</html>
